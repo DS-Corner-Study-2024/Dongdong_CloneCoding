@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    Vector2 inputVec;
+    public Vector2 inputVec;
     public float speed; // 이동 속도
 
     Rigidbody2D rigid;
