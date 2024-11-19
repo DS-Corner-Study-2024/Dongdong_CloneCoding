@@ -36,4 +36,9 @@ public class Enemy : MonoBehaviour
         // 몬스터 바라보는 방향 반전
         spriter.flipX = target.position.x < rigid.position.x; // 목표 x < 몬스터 x
     }
+
+    void OnEnable() // 스크립트 활성화 시 호출
+    {
+        target = GameManager.instance.player.GetComponent<Rigidbody2D>();
+    }
 }
