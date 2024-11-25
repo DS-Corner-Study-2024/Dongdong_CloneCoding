@@ -10,6 +10,15 @@ public class Weapon : MonoBehaviour
     public int count;
     public float speed;
 
+    //원거리 무기
+    float timer;
+    Player player;
+
+    private void Awake()
+    {
+        player = GetComponentInParent<Player>(); //부모 컴포넌트 가져오기
+    }
+
     void Start()
     {
         Init();
@@ -23,13 +32,19 @@ public class Weapon : MonoBehaviour
                 transform.Rotate(Vector3.back * speed * Time.deltaTime);
                 break;
             default:
+                timer += Time.deltaTime;
+                if (timer > speed)
+                {
+                    timer = 0f;
+                    Fire();
+                }
                 break;
         }
 
         //test
         if (Input.GetButtonDown("Jump"))
         {
-            LevelUp(20, 5);
+            LevelUp(10, 1);
         }
     }
 
@@ -49,7 +64,8 @@ public class Weapon : MonoBehaviour
                 speed = 150;
                 Batch();
                 break;
-            default:
+            default: 
+                speed = 0.3f; //연산속도, 적을수록 많이 발사
                 break;
         }
     }
@@ -77,7 +93,23 @@ public class Weapon : MonoBehaviour
             bullet.Rotate(rotVec);
             bullet.Translate(bullet.up * 1.5f, Space.World);
 
-            bullet.GetComponent<Bullet>().Init(damage, -1); // 근접 무기(무한 관통)
+            bullet.GetComponent<Bullet>().Init(damage, -1, Vector3.zero); // 근접 무기(무한 관통)
         }
+    }
+
+    void Fire()
+    {
+        if (!player.scanner.nearestTarget) return; //가장 가까운 적 없다면 반환
+
+        // 방향
+        Vector3 targetPos = player.scanner.nearestTarget.position;
+        Vector3 dir = targetPos - transform.position; // 크기 포함 방향
+        dir = dir.normalized; // 벡터 방향 유지하며 크기 1로 변환
+        
+        //총알 생성
+        Transform bullet = GameManager.instance.pool.Get(prefabId).transform;
+        bullet.position = transform.position; //위치
+        bullet.rotation = Quaternion.FromToRotation(Vector3.up, dir); // 지정 축 중심으로 목표 향해 회전
+        bullet.GetComponent<Bullet>().Init(damage, count, dir); //전달
     }
 }
