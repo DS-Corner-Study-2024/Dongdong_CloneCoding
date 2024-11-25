@@ -13,19 +13,23 @@ public class Enemy : MonoBehaviour
 
     // 제어 변수 선언
     Rigidbody2D rigid;
+    Collider2D coll;
     Animator anim;
     SpriteRenderer spriter;
+    WaitForFixedUpdate wait;
 
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        coll = GetComponent<Collider2D>();
         anim = GetComponent<Animator>();
         spriter = GetComponent<SpriteRenderer>();
+        wait = new WaitForFixedUpdate();
     }
 
     void FixedUpdate()
     {
-        if (!isLive) return;
+        if (!isLive || anim.GetCurrentAnimatorStateInfo(0).IsName("Hit")) return;
 
         Vector2 dirVec = target.position - rigid.position; // 타겟 위치 - 몬스터 위치
         // 나아갈 다음 위치
@@ -46,6 +50,10 @@ public class Enemy : MonoBehaviour
     {
         target = GameManager.instance.player.GetComponent<Rigidbody2D>();
         isLive = true;
+        coll.enabled = true;
+        rigid.simulated = true;
+        spriter.sortingOrder = 2;
+        anim.SetBool("Dead", false);
         health = maxHealth;
     }
 
@@ -60,11 +68,35 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Bullet")) return;
-        health -= collision.GetComponent<Bullet>().damage;
+        if (!collision.CompareTag("Bullet") || !isLive ) return;
 
-        if (health > 0) { }
-        else Dead();
+        health -= collision.GetComponent<Bullet>().damage;
+        StartCoroutine(KnockBack());
+
+        if (health > 0) //맞으면
+        { 
+            anim.SetTrigger("Hit");
+        }
+        else // 죽으면
+        {
+            isLive = false;
+            coll.enabled = false;
+            rigid.simulated = false;
+            spriter.sortingOrder = 1;
+            anim.SetBool("Dead", true);
+            GameManager.instance.kill++;
+            GameManager.instance.GetExp();
+            //Dead();
+        }
+    }
+
+    //코루틴: 비동기 실행 함수
+    IEnumerator KnockBack()
+    {
+        yield return wait; // 다음 하나의 물리 프레임 딜레이
+        Vector3 playerPos = GameManager.instance.player.transform.position;
+        Vector3 dirVec = transform.position - playerPos;
+        rigid.AddForce(dirVec.normalized * 3, ForceMode2D.Impulse); //플레이어 반대 방향으로 넉백
     }
 
     void Dead()
