@@ -13,6 +13,8 @@ public class Item : MonoBehaviour
 
     Image icon;
     Text textLevel;
+    Text textName;
+    Text textDesc;
 
     private void Awake()
     {
@@ -20,12 +22,31 @@ public class Item : MonoBehaviour
         icon.sprite = data.itemIcon; // 초기화
 
         Text[] texts = GetComponentsInChildren<Text>();
-        textLevel = texts[0]; //텍스트 하나 뿐
+        // hierarchy 순서대로 각각 저장
+        textLevel = texts[0];
+        textName = texts[1];
+        textDesc = texts[2];
+        textName.text = data.itemName;
     }
 
-    private void LateUpdate()
+    private void OnEnable()
     {
         textLevel.text = "Lv." + (level + 1);
+        switch (data.itemType)
+        {
+            case ItemData.ItemType.Melee:
+            case ItemData.ItemType.Range:
+                textDesc.text = string.Format(data.itemDesc, 100 * data.damages[level], data.counts[level]);
+                break;
+            case ItemData.ItemType.Glove:
+            case ItemData.ItemType.Shoe:
+                textDesc.text = string.Format(data.itemDesc, 100 * data.damages[level]);
+                break;
+            default:
+                textDesc.text = string.Format(data.itemDesc);
+                break;
+        }
+
     }
 
     public void OnClick()
@@ -34,7 +55,7 @@ public class Item : MonoBehaviour
         {
             case ItemData.ItemType.Melee:
             case ItemData.ItemType.Range:
-                if(level == 0) {
+                if (level == 0) {
                     GameObject newWeapon = new GameObject();
                     weapon = newWeapon.AddComponent<Weapon>(); //게임 오브젝트에 Weapon 컴포넌트 추가
                     weapon.Init(data);

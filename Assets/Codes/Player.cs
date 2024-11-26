@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,12 +26,14 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if (!GameManager.instance.isLive) return;
         //inputVec.x = Input.GetAxisRaw("Horizontal");
         //inputVec.y = Input.GetAxisRaw("Vertical");
     }
 
     void FixedUpdate()
     {
+        if (!GameManager.instance.isLive) return;
         Vector2 nextVec = inputVec * speed * Time.fixedDeltaTime; //나아갈 방향 크기
         //rigid.AddForce(inputVec); //힘
         //rigid.velocity = inputVec; //속도
@@ -44,6 +47,7 @@ public class Player : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!GameManager.instance.isLive) return;
         animator.SetFloat("Speed", inputVec.magnitude); //벡터의 순수한 크기 float 값
 
         if (inputVec.x != 0) spriteRenderer.flipX = inputVec.x < 0;
