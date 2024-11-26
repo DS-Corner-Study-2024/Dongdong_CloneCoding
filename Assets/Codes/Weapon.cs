@@ -88,6 +88,11 @@ public class Weapon : MonoBehaviour
                 break;
         }
 
+        // hand set
+        Hand hand = player.hands[(int)data.itemType];
+        hand.spriter.sprite = data.hand;
+        hand.gameObject.SetActive(true);
+
         // 장갑, 신발 레벨 업 이후 생성한 무기들에 해당 레벨 적용(기어 없을 땐 호출 X)
         player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver);
     }

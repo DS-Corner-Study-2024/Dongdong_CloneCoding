@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     public Vector2 inputVec;
     public float speed; // 이동 속도
     public Scanner scanner; //원거리 공격 구현
+    public Hand[] hands;
 
     Rigidbody2D rigid;
     SpriteRenderer spriteRenderer;
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         scanner = GetComponent<Scanner>(); //스크립트도 컴포넌트와 동일하게 취급
+        hands = GetComponentsInChildren<Hand>(true); // 비활성화 오브젝트 포함
     }
 
     void Update()
