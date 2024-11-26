@@ -52,4 +52,19 @@ public class Player : MonoBehaviour
 
         if (inputVec.x != 0) spriteRenderer.flipX = inputVec.x < 0;
     }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!GameManager.instance.isLive) return;
+        
+        GameManager.instance.health -= Time.deltaTime * 10;
+        if (GameManager.instance.health < 0) {
+            for (int i = 2; i < transform.childCount; i++) {
+                transform.GetChild(i).gameObject.SetActive(false);
+            }
+
+            animator.SetTrigger("Dead");
+            GameManager.instance.GameOver();
+        }
+    }
 }

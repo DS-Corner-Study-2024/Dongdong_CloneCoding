@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,8 +13,8 @@ public class GameManager : MonoBehaviour
     public float maxGameTime = 2 * 10f; // 최대 플레이 시간
 
     [Header("# Player Info")]
-    public int health;
-    public int maxhealth = 100;
+    public float health;
+    public float maxhealth = 100;
     public int level;
     public int kill;
     public int exp;
@@ -23,6 +24,8 @@ public class GameManager : MonoBehaviour
     public PoolManager pool;
     public Player player;
     public LevelUp uiLevelUp;
+    public Result uiResult; // 게임 결과 저장
+    public GameObject enemyCleaner; // 게임 클리어 시 적 초기화
 
     public void Awake()
     {
@@ -31,12 +34,47 @@ public class GameManager : MonoBehaviour
         //GameManager.instance.player
     }
 
-    private void Start()
+    public void GameStart()
     {
         health = maxhealth;
 
         //test
         uiLevelUp.Select(0);
+        Resume();
+    }
+
+    public void GameOver()
+    {
+        StartCoroutine("GameOverRoutine");
+    }
+
+    IEnumerator GameOverRoutine()
+    {
+        isLive = false;
+        yield return new WaitForSeconds(0.5f); // 묘 이미지 나올 수 있게끔 딜레이
+        uiResult.gameObject.SetActive(true);
+        uiResult.Lose();
+        Stop();
+    }
+
+    public void GameVictroy()
+    {
+        StartCoroutine("GameVictroyRoutine");
+    }
+
+    IEnumerator GameVictroyRoutine()
+    {
+        isLive = false;
+        enemyCleaner.SetActive(true); // 적 초기화
+        yield return new WaitForSeconds(0.5f); // 적 초기화할 수 있게끔 딜레이
+        uiResult.gameObject.SetActive(true);
+        uiResult.Win();
+        Stop();
+    }
+
+    public void GameRetry()
+    {
+        SceneManager.LoadScene(0); //씬 이름 or 인덱스로 씬 불러오기
     }
 
     void Update()
@@ -48,11 +86,13 @@ public class GameManager : MonoBehaviour
         if (gameTime > maxGameTime)
         {
             gameTime = maxGameTime;
+            GameVictroy();
         }
     }
 
     public void GetExp()
     {
+        if (!isLive) return;
         exp++;
         if (exp == nextExp[Mathf.Min(level, nextExp.Length-1)]) // 지정 레벨보다 높아질 경우 처리
         {
