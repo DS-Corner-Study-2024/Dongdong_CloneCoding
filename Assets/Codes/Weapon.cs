@@ -16,12 +16,8 @@ public class Weapon : MonoBehaviour
 
     private void Awake()
     {
-        player = GetComponentInParent<Player>(); //부모 컴포넌트 가져오기
-    }
-
-    void Start()
-    {
-        Init();
+        //player = GetComponentInParent<Player>(); //부모 컴포넌트 가져오기
+        player = GameManager.instance.player;
     }
 
     void Update()
@@ -54,10 +50,33 @@ public class Weapon : MonoBehaviour
         this.count += count;
 
         if(id == 0) Batch();
+
+        // 장갑, 신발 레벨 업 이후 생성한 무기들에 해당 레벨 적용(기어 없을 땐 호출 X)
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver);
     }
 
-    public void Init()
+    public void Init(ItemData data)
     {
+        // basic set
+        name = "Weapon" + data.itemId;
+        transform.parent = player.transform; // 부모 오브젝트 설정
+        transform.localPosition = Vector3.zero;
+
+        // property set
+        id = data.itemId;
+        damage = data.baseDamage;
+        count = data.baseCount;
+
+        // 프리펩 아이디 초기화
+        for (int i = 0; i < GameManager.instance.pool.prefabs.Length; i++) //풀링 매니저에서 찾기
+        {
+            if (data.projectile == GameManager.instance.pool.prefabs[i])
+            {
+                prefabId = i;
+                break;
+            }
+        }
+
         switch (id)
         {
             case 0:
@@ -68,6 +87,9 @@ public class Weapon : MonoBehaviour
                 speed = 0.3f; //연산속도, 적을수록 많이 발사
                 break;
         }
+
+        // 장갑, 신발 레벨 업 이후 생성한 무기들에 해당 레벨 적용(기어 없을 땐 호출 X)
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver);
     }
 
     void Batch()
